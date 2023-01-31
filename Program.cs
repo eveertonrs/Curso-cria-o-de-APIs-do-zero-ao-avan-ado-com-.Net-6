@@ -4,32 +4,33 @@ var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
 //Salva o produto em memoria
-app.MapPost("/salvarproduto", (Produto produto) => {
+app.MapPost("/produtos", (Produto produto) => {
     RepositorioProduto.Add(produto);
+    return Results.Created($"/produtos/{produto.Codigo}", produto.Codigo);
 });
 
-//api.app.com/user/{code}
 //Pega o produto na memoria por ID
-app.MapGet("/getproduto/{codigo}", ([FromRoute] string codigo) => {
+app.MapGet("/produtos/{codigo}", ([FromRoute] string codigo) => {
     var produto = RepositorioProduto.Getby(codigo);
-    return produto;
-});
+    if(produto != null)
+    return Results.Ok(produto);
+        return Results.NotFound(produto);
 
-app.MapGet("/getprodutobyheader", (HttpRequest request) => {
-    return request.Headers["codigo-produto"].ToString();
 });
 
 //Edita o produto
-app.MapPut("/editarproduto",(Produto produto) => {
+app.MapPut("/produtos",(Produto produto) => {
     //Busca o produto salvo pelo o ID
     var produtosalvo = RepositorioProduto.Getby(produto.Codigo);
     //edita a variavel nome
     produtosalvo.Nome = produto.Nome;
+    return Results.Ok(); 
 });
 
-app.MapDelete("/deletarproduto/{codigo}", ([FromRoute] string codigo) => {
+app.MapDelete("/produtos/{codigo}", ([FromRoute] string codigo) => {
      var produtosalvo = RepositorioProduto.Getby(codigo);
      RepositorioProduto.Remove(produtosalvo);
+     return Results.Ok();
 });
 
 app.Run();
